@@ -17,6 +17,7 @@ package com.example.lemonade
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import com.google.android.material.snackbar.Snackbar
@@ -48,6 +49,12 @@ class MainActivity : AppCompatActivity() {
     // Default the squeezeCount to -1
     private var squeezeCount = -1
 
+    //Declare animations
+    private val stb = AnimationUtils.loadAnimation(this,R.anim.stb)
+    private val leftin = AnimationUtils.loadAnimation(this,R.anim.leftin)
+    private val leftout = AnimationUtils.loadAnimation(this,R.anim.leftout)
+    private val squeeze = AnimationUtils.loadAnimation(this,R.anim.squeeze)
+
     private var lemonTree = LemonTree()
     private var lemonImage: ImageView? = null
 
@@ -65,6 +72,7 @@ class MainActivity : AppCompatActivity() {
         // === END IF STATEMENT ===
 
         lemonImage = findViewById(R.id.image_lemon_state)
+        lemonImage!!.startAnimation(stb)
         setViewElements()
         lemonImage!!.setOnClickListener {
             clickLemonImage()
