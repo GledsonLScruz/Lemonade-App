@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         // === END IF STATEMENT ===
 
         lemonImage = findViewById(R.id.image_lemon_state)
+        //a animação
         lemonImage!!.startAnimation(stb)
         setViewElements()
         lemonImage!!.setOnClickListener {
