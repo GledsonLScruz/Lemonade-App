@@ -1,61 +1,58 @@
-/*
- * Copyright (C) 2021 The Android Open Source Project.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.example.lemonade
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import com.google.android.material.snackbar.Snackbar
-import java.sql.Driver
+
+
+//TAGS for savedInstance Bundle
+const val LEMONADE_STATE = "LEMONADE_STATE"
+const val LEMON_SIZE = "LEMON_SIZE"
+const val SQUEEZE_COUNT = "SQUEEZE_COUNT"
 
 class MainActivity : AppCompatActivity() {
 
-    private val LEMONADE_STATE = "LEMONADE_STATE"
-    private val LEMON_SIZE = "LEMON_SIZE"
-    private val SQUEEZE_COUNT = "SQUEEZE_COUNT"
     // SELECT represents the "pick lemon" state
     private val SELECT = "select"
     // SQUEEZE represents the "squeeze lemon" state
     private val SQUEEZE = "squeeze"
     // DRINK represents the "drink lemonade" state
     private val DRINK = "drink"
-    // RESTART represents the state where the lemonade has be drunk and the glass is empty
+    // RESTART represents the state where the lemonade has been drunk and the glass is empty
     private val RESTART = "restart"
-    // Default the state to select
-    private var lemonadeState = "select"
+
+    // Define the default state to select
+    private var lemonadeState = SELECT
     // Default lemonSize to -1
     private var lemonSize = -1
     // Default the squeezeCount to -1
     private var squeezeCount = -1
 
     //Declare animations
-    private val stb = AnimationUtils.loadAnimation(this,R.anim.stb)
-    private val leftin = AnimationUtils.loadAnimation(this,R.anim.leftin)
-    private val leftout = AnimationUtils.loadAnimation(this,R.anim.leftout)
-    private val squeeze = AnimationUtils.loadAnimation(this,R.anim.squeeze)
+    lateinit private var stb: Animation
+    lateinit private var leftin: Animation
+    lateinit private var leftout: Animation
+    lateinit private var squeeze: Animation
 
     private var lemonTree = LemonTree()
     private var lemonImage: ImageView? = null
 
 
+    private fun loadAnimations(){
+        stb = AnimationUtils.loadAnimation(this,R.anim.stb)
+        leftin = AnimationUtils.loadAnimation(this,R.anim.leftin)
+        leftout = AnimationUtils.loadAnimation(this,R.anim.leftout)
+        squeeze = AnimationUtils.loadAnimation(this,R.anim.squeeze)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        loadAnimations()
 
         // === DO NOT ALTER THE CODE IN THE FOLLOWING IF STATEMENT ===
         if (savedInstanceState != null) {
@@ -65,16 +62,18 @@ class MainActivity : AppCompatActivity() {
         }
         // === END IF STATEMENT ===
 
-        lemonImage = findViewById(R.id.image_lemon_state)
+        lemonImage = findViewById<ImageView>(R.id.image_lemon_state)
         //a animação
-        lemonImage!!.startAnimation(stb)
-        setViewElements()
-        lemonImage!!.setOnClickListener {
+        lemonImage?.startAnimation(stb)
+        lemonImage?.setOnClickListener {
             clickLemonImage()
         }
-        lemonImage!!.setOnLongClickListener {
+
+        lemonImage?.setOnLongClickListener {
             showSnackbar()
         }
+
+        setAnimationListeners()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -84,33 +83,60 @@ class MainActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
+    fun setAnimationListeners(){
 
-    private fun clickLemonImage() {
-        if (this.lemonadeState == SELECT) {
-            lemonadeState = SQUEEZE
-            lemonSize = lemonTree.pick()
-            squeezeCount = 0
-        }
-        else if (lemonadeState == SQUEEZE) {
-            squeezeCount += 1
-            lemonSize -= 1
-            if (lemonSize == 0){
-                lemonadeState = DRINK
+        fun setAnimation(vararg anim: Animation){
+            anim.forEach {
+                it.setAnimationListener(object: Animation.AnimationListener{
+                    override fun onAnimationStart(animation: Animation?) {
+                        //TODO("Not yet implemented")
+                    }
+
+                    override fun onAnimationEnd(animation: Animation?) {
+                        updateLemonImage()
+                    }
+
+                    override fun onAnimationRepeat(animation: Animation?) {
+                        //TODO("Not yet implemented")
+                    }
+
+                })
             }
         }
-        else if (lemonadeState == DRINK){
-            lemonadeState = RESTART
-            lemonSize = -1
-        }
-        else if (lemonadeState == RESTART){
-            lemonadeState = SELECT
-        }
-        setViewElements()
+        setAnimation(stb,squeeze,leftout,leftin)
     }
 
 
-    private fun setViewElements() {
-        val textAction: TextView = findViewById(R.id.text_action)
+    private fun clickLemonImage() {
+
+        when (lemonadeState) {
+            SELECT -> {
+                lemonadeState = SQUEEZE
+                lemonSize = lemonTree.pick()
+                squeezeCount = 0
+            }
+            SQUEEZE -> {
+                lemonImage?.startAnimation(squeeze)
+                squeezeCount += 1
+                lemonSize -= 1
+                if (lemonSize == 0){
+                    lemonadeState = DRINK
+                }
+            }
+            DRINK -> {
+                lemonImage?.startAnimation(leftin)
+                lemonadeState = RESTART
+                lemonSize = -1
+            }
+            RESTART -> {
+                lemonadeState = SELECT
+            }
+        }
+    }
+
+
+    private fun updateLemonImage() {
+        val textAction = findViewById<TextView>(R.id.text_action)
 
         when (lemonadeState) {
             SELECT -> {textAction.setText(R.string.lemon_select)
