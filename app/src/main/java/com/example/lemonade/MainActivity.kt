@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
     private val RESTART = "restart"
 
     // Define the default state to select
-    private var lemonadeState = "select"
+    private var lemonadeState = SELECT
     // Default lemonSize to -1
     private var lemonSize = -1
     // Default the squeezeCount to -1
@@ -68,11 +68,12 @@ class MainActivity : AppCompatActivity() {
         lemonImage?.setOnClickListener {
             clickLemonImage()
         }
-        updateLemonImage()
 
         lemonImage?.setOnLongClickListener {
             showSnackbar()
         }
+
+        setAnimationListeners()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -80,6 +81,29 @@ class MainActivity : AppCompatActivity() {
         outState.putInt(LEMON_SIZE, lemonSize)
         outState.putInt(SQUEEZE_COUNT, squeezeCount)
         super.onSaveInstanceState(outState)
+    }
+
+    fun setAnimationListeners(){
+
+        fun setAnimation(vararg anim: Animation){
+            anim.forEach {
+                it.setAnimationListener(object: Animation.AnimationListener{
+                    override fun onAnimationStart(animation: Animation?) {
+                        //TODO("Not yet implemented")
+                    }
+
+                    override fun onAnimationEnd(animation: Animation?) {
+                        updateLemonImage()
+                    }
+
+                    override fun onAnimationRepeat(animation: Animation?) {
+                        //TODO("Not yet implemented")
+                    }
+
+                })
+            }
+        }
+        setAnimation(stb,squeeze,leftout,leftin)
     }
 
 
@@ -108,7 +132,6 @@ class MainActivity : AppCompatActivity() {
                 lemonadeState = SELECT
             }
         }
-        updateLemonImage()
     }
 
 
